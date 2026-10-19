@@ -41,6 +41,14 @@ claude mcp add --transport http tropia https://api.tropia.pl/mcp --header "Autho
 
 Clients that cannot send headers can pass the key in the URL: `https://api.tropia.pl/mcp?klucz=trp_YOUR_KEY`.
 
+### Docker (stdio)
+
+For clients that only run local MCP servers, use the image [`ddaapp/tropia-mcp`](https://hub.docker.com/r/ddaapp/tropia-mcp) on Docker Hub (source in [`docker/`](docker/)):
+
+```bash
+docker run -i --rm -e TROPIA_API_KEY=trp_YOUR_KEY ddaapp/tropia-mcp
+```
+
 ### API key
 
 Get a key at [tropia.pl/api](https://tropia.pl/api). The free demo key works for three showcase companies (ORLEN, CD PROJEKT, 4MASS):
@@ -85,6 +93,10 @@ curl -H "Authorization: Bearer trp_demo_1daaac3ab3d6d898" https://api.tropia.pl/
 ## Data and privacy
 
 Data comes from public Polish registers: KRS (Ministry of Justice), MSiG, the eKRS financial documents repository, SUDOP (UOKiK), NFZ, the Central Register of Contracts and e-Zamówienia. PESEL numbers never leave the server. Personal data follows the GDPR objection process described at [tropia.pl](https://tropia.pl); the MCP server does not expose person search or beneficial owner (CRBR) data.
+
+## Open data
+
+Aggregated financial benchmarks of Polish companies by PKD division (2023-2025), entity counts by legal form and region, and registrations per year are published as open data (CC BY 4.0) on Zenodo: [doi.org/10.5281/zenodo.23473573](https://doi.org/10.5281/zenodo.23473573).
 
 ---
 
