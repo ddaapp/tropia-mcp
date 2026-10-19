@@ -1,11 +1,11 @@
 # tropia.pl MCP server and API: Polish company data from KRS
 
-Remote [Model Context Protocol](https://modelcontextprotocol.io) server and REST API by [tropia.pl](https://tropia.pl) — the Polish company intelligence service built on the National Court Register (KRS).
+Remote [Model Context Protocol](https://modelcontextprotocol.io) server and REST API by [tropia.pl](https://tropia.pl), the Polish company intelligence service built on the National Court Register (KRS).
 
 Ask Claude, Cursor or any MCP client about a Polish company and get answers from registry data:
 
 - **1.2 million entities from KRS** (913,000 active): companies, foundations, associations, cooperatives
-- **Current and historical connections**: board members, supervisory boards, shareholders and proxies with dates from/to — who ran or owned a company in the past, not only today
+- **Current and historical connections**: board members, supervisory boards, shareholders and proxies with dates from/to: who ran or owned a company in the past, not only today
 - **Registry change history** from KRS and the Court and Economic Monitor (MSiG)
 - **Financial statements** of 630,000 companies from the eKRS repository: revenue, profit, assets, equity; full balance sheet and P&L line by line where available
 - **State aid** received (SUDOP, UOKiK) and **public contracts** (NFZ, Central Register of Contracts, e-Zamówienia)
