@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.ddaapp/tropia",
+  "title": "tropia.pl: Polish companies (KRS)",
+  "description": "Polish company data from KRS: profiles, historical connections, financials, state aid.",
+  "version": "1.0.0",
+  "websiteUrl": "https://tropia.pl/api",
+  "repository": { "url": "https://github.com/ddaapp/tropia-mcp", "source": "github" },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.tropia.pl/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer trp_… API key from https://tropia.pl/api (demo key: trp_demo_1daaac3ab3d6d898)",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

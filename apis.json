@@ -1,0 +1,50 @@
+{
+  "aid": "tropia",
+  "name": "tropia.pl",
+  "description": "Polish company intelligence from the National Court Register (KRS): registry profiles, current and historical connections, registry change history, financial statements, state aid and public contracts. REST API and remote MCP server for AI assistants.",
+  "url": "https://raw.githubusercontent.com/ddaapp/tropia-mcp/main/apis.json",
+  "image": "https://tropia.pl/icon-512.png",
+  "specificationVersion": "0.19",
+  "created": "2026-10-19",
+  "modified": "2026-10-19",
+  "tags": ["Companies", "Business Registry", "KRS", "Poland", "KYB", "Due Diligence", "Financial Statements", "MCP"],
+  "apis": [
+    {
+      "aid": "tropia:tropia-api",
+      "name": "tropia.pl API",
+      "description": "Prepaid REST API with Polish company data from KRS: search, company profile, connections (current and historical), registry events, financial statements, state aid (SUDOP) and public contracts.",
+      "humanURL": "https://tropia.pl/api",
+      "baseURL": "https://api.tropia.pl/v1",
+      "image": "https://tropia.pl/icon-512.png",
+      "tags": ["Companies", "KRS", "Poland", "Financial Statements", "State Aid", "Public Procurement"],
+      "properties": [
+        { "type": "OpenAPI", "url": "https://raw.githubusercontent.com/ddaapp/tropia-mcp/main/openapi.json" },
+        { "type": "Documentation", "url": "https://tropia.pl/api/dokumentacja" },
+        { "type": "Pricing", "url": "https://tropia.pl/api" },
+        { "type": "SignUp", "url": "https://tropia.pl/api" },
+        { "type": "MCPServer", "url": "https://api.tropia.pl/mcp" }
+      ]
+    },
+    {
+      "aid": "tropia:tropia-mcp",
+      "name": "tropia.pl MCP Server",
+      "description": "Remote Model Context Protocol server (Streamable HTTP) exposing tropia.pl company data as read-only tools for AI assistants such as Claude and Cursor.",
+      "humanURL": "https://github.com/ddaapp/tropia-mcp",
+      "baseURL": "https://api.tropia.pl/mcp",
+      "image": "https://tropia.pl/icon-512.png",
+      "tags": ["MCP", "AI Agents", "Companies", "KRS", "Poland"],
+      "properties": [
+        { "type": "Documentation", "url": "https://github.com/ddaapp/tropia-mcp#readme" },
+        { "type": "SignUp", "url": "https://tropia.pl/api" }
+      ]
+    }
+  ],
+  "common": [
+    { "type": "Website", "url": "https://tropia.pl" },
+    { "type": "Contact", "url": "https://tropia.pl/api" },
+    { "type": "GitHubRepository", "url": "https://github.com/ddaapp/tropia-mcp" }
+  ],
+  "maintainers": [
+    { "FN": "tropia.pl", "email": "redakcja@tropia.pl", "url": "https://tropia.pl" }
+  ]
+}

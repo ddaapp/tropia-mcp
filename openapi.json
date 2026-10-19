@@ -1,0 +1,142 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "tropia.pl API",
+    "version": "1.3.0",
+    "description": "Programistyczny dostęp do danych rejestrowych KRS, powiązań, sprawozdań finansowych, pomocy publicznej (SUDOP) i kontraktów publicznych (NFZ/CRU/e-Zamówienia). Model prepaid — koszt żądania w groszach zwracany w nagłówku X-Koszt-Gr, saldo w X-Saldo-Gr. Żądania 404 nie są płatne. Dokumentacja: https://tropia.pl/api/dokumentacja",
+    "contact": { "email": "redakcja@tropia.pl", "url": "https://tropia.pl/api" }
+  },
+  "servers": [{ "url": "https://api.tropia.pl" }],
+  "security": [{ "bearerAuth": [] }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "description": "Klucz API w formacie trp_… (alternatywnie parametr ?klucz=)" }
+    },
+    "parameters": {
+      "krs": { "name": "krs", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{10}$" }, "example": "0000028860" },
+      "limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "maximum": 200 } },
+      "offset": { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+    },
+    "responses": {
+      "err401": { "description": "brak lub nieprawidłowy klucz" },
+      "err402": { "description": "saldo wyczerpane" },
+      "err403": { "description": "endpoint niedostępny dla klucza (demo / brak uprawnienia CRBR)" },
+      "err404": { "description": "nie znaleziono podmiotu (bez opłaty)" },
+      "err429": { "description": "przekroczony limit żądań/min" }
+    },
+    "schemas": {
+      "Firma": {
+        "type": "object",
+        "description": "Dane rejestrowe podmiotu. Pola bez wartości są zwracane jako null.",
+        "properties": {
+          "krs": { "type": "string", "pattern": "^[0-9]{10}$" },
+          "rejestr": { "type": "string", "nullable": true, "description": "Oznaczenie rejestru KRS, np. P = rejestr przedsiębiorców." },
+          "nip": { "type": "string", "nullable": true },
+          "regon": { "type": "string", "nullable": true },
+          "nazwa": { "type": "string" },
+          "nazwa_skrocona": { "type": "string", "nullable": true },
+          "forma": { "type": "string", "nullable": true },
+          "forma_id": { "type": "string", "nullable": true },
+          "status": { "type": "string", "nullable": true },
+          "data_rejestracji": { "type": "string", "format": "date", "nullable": true },
+          "data_wykreslenia": { "type": "string", "format": "date", "nullable": true },
+          "adres": {
+            "type": "object",
+            "properties": {
+              "ulica": { "type": "string", "nullable": true }, "nr": { "type": "string", "nullable": true },
+              "lokal": { "type": "string", "nullable": true }, "kod": { "type": "string", "nullable": true },
+              "poczta": { "type": "string", "nullable": true }, "miejscowosc": { "type": "string", "nullable": true },
+              "gmina": { "type": "string", "nullable": true }, "powiat": { "type": "string", "nullable": true },
+              "woj": { "type": "string", "nullable": true }
+            }
+          },
+          "kapital": { "type": "number", "nullable": true },
+          "kapital_waluta": { "type": "string", "nullable": true },
+          "pkd_glowny": { "type": "string", "nullable": true },
+          "ma_sprawozdania": { "type": "boolean", "nullable": true },
+          "ostatni_wpis": { "type": "string", "format": "date", "nullable": true },
+          "ostatni_wpis_nr": { "type": "string", "nullable": true },
+          "zrodlo": { "type": "string", "nullable": true },
+          "stan_na": { "type": "string", "format": "date", "nullable": true },
+          "nazwy_historyczne": { "type": "array", "nullable": true, "items": { "type": "object" } }
+        }
+      },
+      "PozycjaFinansowa": {
+        "type": "object",
+        "required": ["kod", "nazwa", "wartosc", "poprzedni_rok"],
+        "properties": {
+          "kod": { "type": "string" },
+          "nazwa": { "type": "string" },
+          "wartosc": { "type": "number", "nullable": true, "description": "Kwota za bieżący okres w pełnych złotych." },
+          "poprzedni_rok": { "type": "number", "nullable": true, "description": "Kwota porównawcza z dokumentu w pełnych złotych." }
+        }
+      },
+      "FinansePodsumowanie": {
+        "type": "object",
+        "description": "Kwoty w pełnych złotych.",
+        "required": ["rok", "zrodlo", "materialnosc", "inst_finansowa", "skala_niepewna", "szczegoly_esf"],
+        "properties": {
+          "rok": { "type": "integer" },
+          "zrodlo": { "type": "string", "enum": ["rdf", "compabase", "esf"] },
+          "okres_od": { "type": "string", "format": "date", "nullable": true },
+          "okres_do": { "type": "string", "format": "date", "nullable": true },
+          "przychody": { "type": "number", "nullable": true },
+          "zysk_netto": { "type": "number", "nullable": true },
+          "suma_bilansowa": { "type": "number", "nullable": true },
+          "kapital_wlasny": { "type": "number", "nullable": true },
+          "materialnosc": { "type": "integer", "enum": [0, 1] },
+          "inst_finansowa": { "type": "boolean" },
+          "skala_niepewna": { "type": "boolean" },
+          "szczegoly_esf": { "type": "boolean", "description": "Czy endpoint wybranego roku może zwrócić szczegółowe sekcje e-sprawozdania." }
+        }
+      },
+      "FinanseRok": {
+        "allOf": [
+          { "$ref": "#/components/schemas/FinansePodsumowanie" },
+          { "type": "object", "properties": {
+            "schema_typ": { "type": "string", "nullable": true },
+            "wariant": { "type": "string", "nullable": true },
+            "data_sporzadzenia": { "type": "string", "format": "date", "nullable": true },
+            "koszty": { "type": "number", "nullable": true },
+            "zysk_brutto": { "type": "number", "nullable": true },
+            "podatek": { "type": "number", "nullable": true },
+            "esf": {
+              "type": "object", "nullable": true,
+              "description": "Pełne sekcje liczbowe e-sprawozdania, źródło dokumentu oraz oświadczenia o kontynuacji działalności, jeśli szczegoly_esf=true.",
+              "properties": {
+                "dokument_id": { "type": "string", "nullable": true, "description": "Identyfikator dokumentu źródłowego w RDF." },
+                "kontynuacja": {
+                  "type": "object",
+                  "properties": {
+                    "zalozenie": { "type": "boolean", "nullable": true, "description": "Sprawozdanie sporządzono przy założeniu kontynuacji działalności." },
+                    "brak_zagrozen": { "type": "boolean", "nullable": true, "description": "Jednostka zadeklarowała brak okoliczności zagrażających kontynuacji działalności." }
+                  }
+                },
+                "bilans": { "type": "array", "items": { "$ref": "#/components/schemas/PozycjaFinansowa" } },
+                "rzis": { "type": "array", "items": { "$ref": "#/components/schemas/PozycjaFinansowa" } },
+                "przeplywy": { "type": "array", "description": "Rachunek przepływów pieniężnych, jeśli występuje w dokumencie.", "items": { "$ref": "#/components/schemas/PozycjaFinansowa" } },
+                "zmiany_kapitalu": { "type": "array", "description": "Zestawienie zmian w kapitale własnym, jeśli występuje w dokumencie.", "items": { "$ref": "#/components/schemas/PozycjaFinansowa" } },
+                "podatek": { "type": "array", "description": "Szczegółowe rozliczenie podatku dochodowego, jeśli występuje w dokumencie.", "items": { "$ref": "#/components/schemas/PozycjaFinansowa" } }
+              }
+            }
+          } }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/v1/konto": { "get": { "summary": "Saldo i zużycie klucza (0 zł)", "responses": { "200": { "description": "saldo_gr, zuzycie_30d, parametry klucza" }, "401": { "$ref": "#/components/responses/err401" } } } },
+    "/v1/szukaj": { "get": { "summary": "Wyszukiwanie podmiotów (0,03 zł)", "parameters": [{ "name": "q", "in": "query", "required": true, "schema": { "type": "string", "minLength": 3 }, "description": "nazwa (bez wrażliwości na diakrytyki), KRS, NIP lub REGON" }], "responses": { "200": { "description": "do 10 wyników: krs, nip, regon, nazwa, status, miejscowość, woj." } } } },
+    "/v1/firma/{krs}": { "get": { "summary": "Dane rejestrowe, adres i ostatni wpis (0,03 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }], "responses": { "200": { "description": "dane rejestrowe + nazwy historyczne", "content": { "application/json": { "schema": { "type": "object", "properties": { "firma": { "$ref": "#/components/schemas/Firma" } } } } } }, "404": { "$ref": "#/components/responses/err404" } } } },
+    "/v1/firma/{krs}/pelne": { "get": { "summary": "Pełne dane: organy, PKD, sąd, stany Dz.6 (0,03 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }], "responses": { "200": { "description": "dane podstawowe + organy (aktualne, z funkcjami i źródłem), pkd[], sad, stany_dz6[] ze źródłem" } } } },
+    "/v1/firma/{krs}/powiazania": { "get": { "summary": "Powiązania osobowe i kapitałowe (0,03 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }], "responses": { "200": { "description": "osoby[], podmioty[], wystepuje_w[] — z rolą, funkcją, datami, źródłem" } } } },
+    "/v1/firma/{krs}/zdarzenia": { "get": { "summary": "Historia zdarzeń rejestrowych (0,05 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }, { "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/offset" }, { "name": "od", "in": "query", "schema": { "type": "string" } }, { "name": "do", "in": "query", "schema": { "type": "string" } }], "responses": { "200": { "description": "total + zdarzenia[]: data, akcja, rola, funkcja, kto" } } } },
+    "/v1/firma/{krs}/finanse": { "get": { "summary": "Wieloletnie podsumowanie finansów i flag jakości (0,03 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }], "responses": { "200": { "description": "lata[]: okres, źródło, przychody, zysk netto, suma bilansowa, kapitał własny i flagi jakości; kwoty w pełnych złotych", "content": { "application/json": { "schema": { "type": "object", "properties": { "krs": { "type": "string" }, "nazwa": { "type": "string" }, "lata": { "type": "array", "items": { "$ref": "#/components/schemas/FinansePodsumowanie" } } } } } } } } } },
+    "/v1/firma/{krs}/finanse/{rok}": { "get": { "summary": "Sprawozdanie za rok: KPI i pełne sekcje e-SF (0,20 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }, { "name": "rok", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 2024 }], "responses": { "200": { "description": "źródło, schemat, wariant, okres, data sporządzenia, KPI i flagi jakości; przy szczegoly_esf=true dodatkowo dokument, kontynuacja działalności, bilans, RZiS, przepływy, zmiany kapitału i podatek pozycja po pozycji", "content": { "application/json": { "schema": { "type": "object", "properties": { "krs": { "type": "string" }, "nazwa": { "type": "string" }, "finanse": { "$ref": "#/components/schemas/FinanseRok" } } } } } }, "404": { "$ref": "#/components/responses/err404" } } } },
+    "/v1/firma/{krs}/beneficjenci": { "get": { "summary": "Beneficjenci rzeczywiści CRBR (0,05 zł; wymaga uprawnienia)", "parameters": [{ "$ref": "#/components/parameters/krs" }], "responses": { "200": { "description": "beneficjenci[]: imiona i nazwisko, charakter (bezpośredni/pośrednia), rodzaj, daty" }, "403": { "$ref": "#/components/responses/err403" } } } },
+    "/v1/firma/{krs}/pomoc-publiczna": { "get": { "summary": "Pomoc publiczna SUDOP (0,10 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }, { "$ref": "#/components/parameters/limit" }, { "$ref": "#/components/parameters/offset" }], "responses": { "200": { "description": "total, per_rok[] (n, kwota_pln), wpisy[] (data, kwota, forma, przeznaczenie, udzielający)" } } } },
+    "/v1/firma/{krs}/kontrakty": { "get": { "summary": "Kontrakty publiczne: NFZ, CRU, przetargi (0,10 zł)", "parameters": [{ "$ref": "#/components/parameters/krs" }], "responses": { "200": { "description": "nfz.per_rok[], cru.umowy[], przetargi.wygrane[] — z kwotami" } } } },
+    "/v1/osoba/{id}": { "get": { "summary": "Dane osoby z KRS (0,03 zł)", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "imiona, nazwisko, warianty_id, liczba podmiotów" }, "404": { "$ref": "#/components/responses/err404" } } } },
+    "/v1/osoba/{id}/powiazania": { "get": { "summary": "Podmioty osoby (0,03 zł)", "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }], "responses": { "200": { "description": "powiazania[]: krs, nazwa, rola, funkcja, daty, aktualne, źródło" } } } }
+  }
+}
